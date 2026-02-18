@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Consolidación — Somos Uno MCI Medellín</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --verde: #1a0a2e; --verde-medio: #3a1fc4; --verde-claro: #6b52e0;
+    --dorado: #e8421a; --dorado-claro: #ff7a4d; --crema: #f5f2ff;
+    --oscuro: #0a0a0a; --gris: #6b6b80; --rojo: #c0392b;
+    --naranja: #e8421a; --azul: #3a1fc4;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'DM Sans',sans-serif; background:var(--crema); color:var(--oscuro); }
+
+  #loading { position:fixed; inset:0; background:var(--verde); display:flex; flex-direction:column; align-items:center; justify-content:center; z-index:9999; transition:opacity .5s; }
+  #loading.oculto { opacity:0; pointer-events:none; }
+  .spinner { width:48px; height:48px; border:4px solid rgba(255,255,255,.2); border-top-color:var(--dorado-claro); border-radius:50%; animation:spin .8s linear infinite; margin-bottom:20px; }
+  @keyframes spin { to { transform:rotate(360deg); } }
+  #loading p { color:rgba(255,255,255,.7); font-size:14px; }
+  #error-msg { display:none; background:#fdecea; border:1px solid #e74c3c; border-radius:12px; padding:20px 24px; margin:20px 40px; color:var(--rojo); font-size:14px; line-height:1.7; }
+
+  nav { background:var(--oscuro); display:flex; align-items:center; padding:0 40px; position:sticky; top:0; z-index:100; overflow-x:auto; }
+  .nav-logo { height:38px; padding:8px 0; margin-right:28px; border-radius:4px; }
+  .nav-brand { font-family:'Syne',sans-serif; font-weight:800; font-size:13px; color:var(--dorado-claro); padding:16px 0; margin-right:28px; white-space:nowrap; line-height:1.2; }
+  .nav-tab { padding:18px 16px; color:rgba(255,255,255,.5); font-size:13px; font-weight:500; cursor:pointer; border:none; background:none; border-bottom:3px solid transparent; transition:all .2s; white-space:nowrap; font-family:'DM Sans',sans-serif; }
+  .nav-tab:hover { color:rgba(255,255,255,.8); }
+  .nav-tab.activo { color:var(--dorado-claro); border-bottom-color:var(--dorado-claro); }
+
+  header { background:var(--verde); padding:40px 40px 32px; position:relative; overflow:hidden; }
+  header::before { content:''; position:absolute; top:-60px; right:-60px; width:280px; height:280px; border-radius:50%; background:rgba(122,175,212,.1); }
+  .header-label { font-family:'Syne',sans-serif; font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--dorado-claro); margin-bottom:10px; }
+  header h1 { font-family:'Syne',sans-serif; font-size:36px; font-weight:800; color:#fff; line-height:1.1; }
+  header h1 span { color:var(--dorado-claro); }
+  .header-meta { margin-top:12px; color:rgba(255,255,255,.55); font-size:13px; }
+  .header-meta strong { color:rgba(255,255,255,.9); }
+
+  main { padding:36px 40px; max-width:1300px; margin:0 auto; }
+
+  .section-title { font-family:'Syne',sans-serif; font-size:12px; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:var(--verde-medio); margin-bottom:20px; display:flex; align-items:center; gap:12px; }
+  .section-title::after { content:''; flex:1; height:1px; background:rgba(26,74,115,.2); }
+
+  .kpi-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:36px; }
+  .kpi-card { background:#fff; border-radius:14px; padding:22px; border:1px solid rgba(0,0,0,.06); position:relative; overflow:hidden; transition:transform .2s; }
+  .kpi-card:hover { transform:translateY(-2px); }
+  .kpi-card::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; }
+  .kpi-card.azul1::before { background:var(--verde-claro); }
+  .kpi-card.azul2::before { background:#5b9ec9; }
+  .kpi-card.azul3::before { background:#3a7ca5; }
+  .kpi-card.rojo::before { background:var(--rojo); }
+  .kpi-label { font-size:11px; letter-spacing:1.5px; text-transform:uppercase; color:var(--gris); margin-bottom:8px; }
+  .kpi-valor { font-family:'Syne',sans-serif; font-size:32px; font-weight:800; color:var(--oscuro); line-height:1; }
+  .kpi-sub { margin-top:6px; font-size:12px; color:var(--gris); }
+
+  /* GRUPOS DE EDAD */
+  .edad-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-bottom:36px; }
+  .edad-card { background:#fff; border-radius:14px; padding:22px; border:1px solid rgba(0,0,0,.06); text-align:center; }
+  .edad-card h4 { font-family:'Syne',sans-serif; font-size:12px; font-weight:700; color:var(--gris); text-transform:uppercase; letter-spacing:1px; margin-bottom:10px; }
+  .edad-num { font-family:'Syne',sans-serif; font-size:36px; font-weight:800; color:var(--verde); }
+  .edad-pct { font-size:13px; color:var(--gris); margin-top:4px; }
+
+  .embudo-card { background:#fff; border-radius:14px; padding:28px; border:1px solid rgba(0,0,0,.06); margin-bottom:36px; }
+  .embudo-card h3 { font-family:'Syne',sans-serif; font-size:15px; font-weight:700; margin-bottom:20px; }
+  .embudo-steps { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; }
+  .embudo-step { text-align:center; padding:18px; border-radius:12px; background:#fafafa; }
+  .embudo-step-num { font-family:'Syne',sans-serif; font-size:28px; font-weight:800; }
+  .embudo-step-pct { font-size:12px; color:var(--gris); margin-top:2px; }
+  .embudo-step-label { font-size:12px; font-weight:600; margin-top:8px; }
+  .embudo-step-bar { height:4px; border-radius:99px; margin-top:10px; background:#eee; overflow:hidden; }
+  .embudo-step-bar-fill { height:100%; border-radius:99px; }
+
+  .chart-card { background:#fff; border-radius:14px; padding:28px; border:1px solid rgba(0,0,0,.06); margin-bottom:36px; }
+  .chart-card h3 { font-family:'Syne',sans-serif; font-size:15px; font-weight:700; margin-bottom:20px; }
+  .bars-chart { display:flex; align-items:flex-end; gap:6px; height:150px; }
+  .bar-col { flex:1; display:flex; flex-direction:column; align-items:center; height:100%; justify-content:flex-end; }
+  .bar-rect { border-radius:4px 4px 0 0; min-height:2px; position:relative; cursor:pointer; transition:opacity .2s; }
+  .bar-rect:hover { opacity:.75; }
+  .bar-tip { position:absolute; bottom:105%; left:50%; transform:translateX(-50%); background:var(--oscuro); color:#fff; padding:3px 8px; border-radius:6px; font-size:11px; white-space:nowrap; pointer-events:none; opacity:0; transition:opacity .15s; }
+  .bar-rect:hover .bar-tip { opacity:1; }
+  .bar-mes { font-size:10px; color:var(--gris); margin-top:5px; }
+
+  .tabla-wrap { background:#fff; border-radius:14px; overflow:hidden; border:1px solid rgba(0,0,0,.06); margin-bottom:36px; }
+  table { width:100%; border-collapse:collapse; font-size:13px; }
+  thead th { background:var(--verde); color:#fff; padding:13px 14px; text-align:left; font-family:'Syne',sans-serif; font-size:11px; letter-spacing:1px; text-transform:uppercase; font-weight:600; }
+  tbody tr { border-bottom:1px solid #f0f0f0; transition:background .15s; }
+  tbody tr:last-child { border-bottom:none; }
+  tbody tr:hover { background:#f0f5f9; }
+  tbody td { padding:11px 14px; vertical-align:middle; }
+  .lider-nombre { font-weight:500; }
+  .mini-bar-wrap { display:flex; align-items:center; gap:8px; }
+  .mini-bar-bg { width:65px; height:5px; background:#f0f0f0; border-radius:99px; overflow:hidden; flex-shrink:0; }
+  .mini-bar { height:100%; border-radius:99px; }
+  .pill { display:inline-block; padding:3px 9px; border-radius:99px; font-size:11px; font-weight:600; }
+  .pill-verde { background:#e8f0f5; color:var(--verde); }
+  .pill-amarillo { background:#fef9e7; color:#b7860b; }
+  .pill-rojo { background:#fdecea; color:var(--rojo); }
+  .clickable-row { cursor:pointer; }
+
+  .filtros-bar { display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-bottom:18px; }
+  .filtro-input { padding:8px 12px; border-radius:8px; border:1px solid rgba(0,0,0,.12); font-family:'DM Sans',sans-serif; font-size:13px; background:#fff; color:var(--oscuro); outline:none; transition:border-color .2s; }
+  .filtro-input:focus { border-color:var(--verde-medio); }
+  .filtro-input.wide { min-width:200px; }
+  .filtro-count { font-size:13px; color:var(--gris); margin-left:auto; }
+
+  .back-btn { display:inline-flex; align-items:center; gap:8px; background:none; border:none; cursor:pointer; color:var(--verde-medio); font-size:14px; font-weight:600; margin-bottom:24px; padding:0; font-family:'DM Sans',sans-serif; }
+  .back-btn:hover { color:var(--verde); }
+  .lider-header { background:#fff; border-radius:14px; padding:28px; border:1px solid rgba(0,0,0,.06); margin-bottom:24px; display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:20px; }
+  .lider-header h2 { font-family:'Syne',sans-serif; font-size:22px; font-weight:800; }
+  .lider-header-stats { display:flex; gap:28px; }
+  .lider-stat { text-align:center; }
+  .lider-stat-val { font-family:'Syne',sans-serif; font-size:26px; font-weight:800; }
+  .lider-stat-label { font-size:11px; color:var(--gris); text-transform:uppercase; letter-spacing:1px; }
+
+  .tabla-personas thead th { padding:11px 12px; font-size:10px; }
+  .tabla-personas tbody td { padding:9px 12px; font-size:12px; }
+  .badge { display:inline-block; padding:2px 8px; border-radius:99px; font-size:11px; font-weight:500; }
+  .badge-si { background:#e8f0f5; color:var(--verde); }
+  .badge-no { background:#fdecea; color:var(--rojo); }
+  .badge-sg { background:#f5f5f5; color:var(--gris); }
+  .badge-edad { background:#e8f0f5; color:var(--verde-medio); font-size:10px; }
+
+  footer { background:var(--oscuro); color:rgba(255,255,255,.4); text-align:center; padding:20px; font-size:12px; }
+
+  @media(max-width:768px) {
+    main { padding:20px 16px; } header { padding:28px 16px; } header h1 { font-size:26px; }
+    .kpi-grid { grid-template-columns:1fr 1fr; } .embudo-steps { grid-template-columns:1fr 1fr; }
+    .edad-grid { grid-template-columns:1fr; } nav { padding:0 16px; }
+  }
+</style>
+</head>
+<body>
+
+<div id="loading"><div class="spinner"></div><p>Cargando datos desde Google Sheets…</p></div>
+<div id="error-msg"></div>
+
+<nav>
+  <img src="somos-uno-logo.jpg" alt="Somos Uno" class="nav-logo">
+  <div class="nav-brand">Somos Uno<br>Medellín</div>
+  <button class="nav-tab activo" onclick="mostrarVista('principal',this)">Principal</button>
+  <button class="nav-tab" onclick="mostrarVista('lideres',this)">Por Líder</button>
+  <button class="nav-tab" onclick="mostrarVista('edad',this)">Por Grupo de Edad</button>
+</nav>
+
+<header>
+  <div class="header-label">MCI Medellín · Reunión Jóvenes Somos Uno</div>
+  <h1 id="headerTitulo">Consolidación <span>2025</span></h1>
+  <div class="header-meta">Datos en vivo · Actualizado: <strong id="ultimaAct">cargando…</strong></div>
+</header>
+
+<main>
+
+  <!-- ══ PRINCIPAL ══ -->
+  <div id="vistaPrincipal">
+    <div class="section-title">Resumen general</div>
+    <div class="kpi-grid" id="kpiPrincipal"></div>
+
+    <div class="section-title">Grupos de edad</div>
+    <div class="edad-grid" id="edadGrid"></div>
+
+    <div class="section-title">Embudo de consolidación</div>
+    <div class="embudo-card"><h3 id="embudoT"></h3><div class="embudo-steps" id="embudoSteps"></div></div>
+
+    <div class="section-title">Personas ganadas por mes</div>
+    <div class="chart-card"><h3>Distribución mensual</h3><div class="bars-chart" id="chartMes"></div></div>
+
+    <div class="section-title">Desempeño por líder</div>
+    <div class="tabla-wrap"><table>
+      <thead><tr><th>Líder</th><th>Ganados</th><th>Llamadas</th><th>Visitas</th><th>En célula</th><th>Estado</th></tr></thead>
+      <tbody id="tablaLideresPrincipal"></tbody>
+    </table></div>
+  </div>
+
+  <!-- ══ POR LÍDER ══ -->
+  <div id="vistaLideres" style="display:none">
+    <div id="selectorLider">
+      <div class="section-title">Selecciona un líder</div>
+      <div class="filtros-bar">
+        <input class="filtro-input wide" type="text" id="buscaLider" placeholder="Buscar líder…" oninput="renderSelector()">
+      </div>
+      <div class="tabla-wrap"><table>
+        <thead><tr><th>Líder</th><th>Ganados</th><th>Llamadas</th><th>Visitas</th><th>En célula</th><th>Estado</th></tr></thead>
+        <tbody id="tablaSelector"></tbody>
+      </table></div>
+    </div>
+
+    <div id="detalleL" style="display:none">
+      <button class="back-btn" onclick="volverSelector()">← Volver a todos los líderes</button>
+      <div class="lider-header">
+        <div><h2 id="lNombre"></h2><div style="color:var(--gris);font-size:13px;margin-top:6px" id="lSub"></div></div>
+        <div class="lider-header-stats" id="lStats"></div>
+      </div>
+      <div class="section-title">Personas invitadas</div>
+      <div class="filtros-bar">
+        <input class="filtro-input wide" type="text" id="buscaP" placeholder="Buscar nombre o quién invitó…" oninput="filtrarP()">
+        <select class="filtro-input" id="fEdad" onchange="filtrarP()">
+          <option value="">Grupo: todos</option>
+          <option value="Somos uno (+18)">Somos Uno (+18)</option>
+          <option value="Rocas ( Entre 15 y 17 años)">Rocas (15–17)</option>
+          <option value="Teens (Entre 9 y 14 años)">Teens (9–14)</option>
+        </select>
+        <select class="filtro-input" id="fLlamada" onchange="filtrarP()">
+          <option value="">Llamada: todas</option>
+          <option value="Sí">Realizada</option>
+          <option value="No">No realizada</option>
+          <option value="No. Errado">Número errado</option>
+          <option value="Sin Gestión">Sin gestión</option>
+        </select>
+        <select class="filtro-input" id="fVisita" onchange="filtrarP()">
+          <option value="">Visita: todas</option>
+          <option value="Sí">Realizada</option><option value="No">No realizada</option>
+        </select>
+        <select class="filtro-input" id="fCelula" onchange="filtrarP()">
+          <option value="">Célula: todas</option>
+          <option value="Sí">Ubicado</option><option value="No">No ubicado</option>
+        </select>
+        <div class="filtro-count" id="pCount"></div>
+      </div>
+      <div class="tabla-wrap"><table class="tabla-personas">
+        <thead><tr>
+          <th>Nombre completo</th><th>Quién invitó</th><th>Grupo</th>
+          <th>Fecha</th><th>Barrio</th>
+          <th>Llamada</th><th>Visita</th><th>En célula</th>
+        </tr></thead>
+        <tbody id="tablaP"></tbody>
+      </table></div>
+    </div>
+  </div>
+
+  <!-- ══ POR GRUPO DE EDAD ══ -->
+  <div id="vistaEdad" style="display:none">
+    <div class="section-title">Somos Uno (+18)</div>
+    <div class="kpi-grid" id="kpiSomosUno"></div>
+    <div class="embudo-card"><h3 id="embudoTSU"></h3><div class="embudo-steps" id="embudoSU"></div></div>
+
+    <div class="section-title">Rocas (15–17 años)</div>
+    <div class="kpi-grid" id="kpiRocas"></div>
+    <div class="embudo-card"><h3 id="embudoTR"></h3><div class="embudo-steps" id="embudoR"></div></div>
+
+    <div class="section-title">Teens (9–14 años)</div>
+    <div class="kpi-grid" id="kpiTeens"></div>
+    <div class="embudo-card"><h3 id="embudoTT"></h3><div class="embudo-steps" id="embudoT2"></div></div>
+  </div>
+
+</main>
+<footer>Dashboard en vivo · Somos Uno MCI Medellín · Datos desde Google Sheets</footer>
+
+<script>
+// ============================================================
+// ⚙️  CONFIGURACIÓN — CAMBIA ESTOS DOS VALORES
+// ============================================================
+const SHEET_ID  = '1wahvkpPwhdhJrHkpOJA-bcD_6F93bERJNxwn7bKQ04Y';
+const API_KEY   = 'AIzaSyDhPN3O3vAHov5IteHzbih6Jru_qHSg63U';  // Puedes usar la misma que el otro dashboard
+const SHEET_TAB = 'Registro Ganar Reuniones';
+// ============================================================
+
+const MESES = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+const EXCLUIR = ['vine por cuenta propia','no conozco a mi líder','vine de visita','verificando','grupo anexo'];
+
+let DATOS = [];
+let personasActuales = [];
+
+async function cargarDatos() {
+  const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${encodeURIComponent(SHEET_TAB+'!A:O')}?key=${API_KEY}`;
+  const res = await fetch(url);
+  if (!res.ok) { const e = await res.json(); throw new Error(e.error?.message || 'Error API'); }
+  return (await res.json()).values || [];
+}
+
+function parsear(headers, fila) {
+  const o = {}; headers.forEach((h,i) => o[h] = (fila[i]||'').trim()); return o;
+}
+
+function getAño(f) {
+  const p = (f['Marca temporal']||'').split('/');
+  if (p.length >= 2) { const y = parseInt((p[2]||'').split(' ')[0]); return y > 2000 ? y : null; }
+  return null;
+}
+function getMes(f) { const p=(f['Marca temporal']||'').split('/'); return p.length>=2?parseInt(p[1]):null; }
+function getFecha(f) { const p=(f['Marca temporal']||'').split('/'); return p.length>=3?`${p[0]}/${p[1]}/${(p[2]||'').split(' ')[0]}`:'-'; }
+function esExcluido(l) { const x=(l||'').toLowerCase(); return EXCLUIR.some(e=>x.includes(e)); }
+
+function metricas(filas) {
+  return {
+    total: filas.length,
+    llamadas: filas.filter(f=>f['Llamada realizada y contestada (SI/NO)']==='Sí').length,
+    visitas:  filas.filter(f=>f['Visita realizada (SI/NO)']==='Sí').length,
+    celula:   filas.filter(f=>f['Ubicado en célula o Grupo Go! (SI/NO)']==='Sí').length,
+  };
+}
+function pct(p,t) { return t>0?Math.round(p/t*100):0; }
+
+function porLider(filas) {
+  const m={};
+  filas.forEach(f=>{ const l=f['Líder Principal']; if(!l||esExcluido(l)) return; if(!m[l]) m[l]=[]; m[l].push(f); });
+  return Object.entries(m).map(([nombre,rows])=>{
+    const mt=metricas(rows);
+    return { nombre, ganados:mt.total, llamadas:pct(mt.llamadas,mt.total), visitas:pct(mt.visitas,mt.total), celula:pct(mt.celula,mt.total) };
+  }).sort((a,b)=>b.celula-a.celula);
+}
+
+function porMes(filas) { const a=Array(12).fill(0); filas.forEach(f=>{ const m=getMes(f); if(m>=1&&m<=12) a[m-1]++; }); return a; }
+
+// ── HTML HELPERS ──
+function kpiH(color,label,val,sub) {
+  return `<div class="kpi-card ${color}"><div class="kpi-label">${label}</div><div class="kpi-valor">${val}</div><div class="kpi-sub">${sub}</div></div>`;
+}
+function renderKPI(id,m,tag) {
+  document.getElementById(id).innerHTML =
+    kpiH('azul1',`Personas ganadas`,m.total,tag) +
+    kpiH('azul2','Llamadas realizadas',m.llamadas,`${pct(m.llamadas,m.total)}% del total`) +
+    kpiH('azul3','Visitas realizadas',m.visitas,`${pct(m.visitas,m.total)}% del total`) +
+    kpiH('rojo','Ubicados en célula',m.celula,`${pct(m.celula,m.total)}% del total`);
+}
+function renderEmbudo(cId,tId,m,label) {
+  document.getElementById(tId).textContent=label;
+  const pasos=[
+    {label:'Personas ganadas',val:m.total,color:'#0d2d4f'},
+    {label:'Llamada realizada',val:m.llamadas,color:'#1a4a73'},
+    {label:'Visita realizada',val:m.visitas,color:'#3a7ca5'},
+    {label:'Ubicado en célula',val:m.celula,color:'#7aafd4'},
+  ];
+  document.getElementById(cId).innerHTML=pasos.map(p=>{
+    const pc=pct(p.val,m.total);
+    return `<div class="embudo-step">
+      <div class="embudo-step-num" style="color:${p.color}">${p.val}</div>
+      <div class="embudo-step-pct">${pc}% del total</div>
+      <div class="embudo-step-label">${p.label}</div>
+      <div class="embudo-step-bar"><div class="embudo-step-bar-fill" style="width:${pc}%;background:${p.color}"></div></div>
+    </div>`;
+  }).join('');
+}
+function renderChart(id,meses,color) {
+  const max=Math.max(...meses,1);
+  document.getElementById(id).innerHTML=MESES.map((m,i)=>{
+    const h=Math.round((meses[i]/max)*140);
+    return `<div class="bar-col"><div class="bar-rect" style="height:${h}px;background:${color};width:80%"><div class="bar-tip">${m}: ${meses[i]}</div></div><div class="bar-mes">${m}</div></div>`;
+  }).join('');
+}
+function miniBar(val,color) {
+  return `<div class="mini-bar-wrap"><div class="mini-bar-bg"><div class="mini-bar" style="width:${val}%;background:${color}"></div></div>${val}%</div>`;
+}
+function pill(val) {
+  if(val>=50) return '<span class="pill pill-verde">Fuerte</span>';
+  if(val>=25) return '<span class="pill pill-amarillo">En desarrollo</span>';
+  return '<span class="pill pill-rojo">Requiere atención</span>';
+}
+function badge(val) {
+  if(val==='Sí') return '<span class="badge badge-si">Sí</span>';
+  if(val==='No') return '<span class="badge badge-no">No</span>';
+  return `<span class="badge badge-sg">${val||'S/D'}</span>`;
+}
+function badgeEdad(val) {
+  if(!val) return '–';
+  if(val.includes('+18')) return '<span class="badge badge-edad">+18</span>';
+  if(val.includes('15')) return '<span class="badge" style="background:#fff3e0;color:#e65100">15-17</span>';
+  if(val.includes('9')) return '<span class="badge" style="background:#f3e5f5;color:#6a1b9a">9-14</span>';
+  return val;
+}
+
+function renderTablaL(tbodyId, lideres, clickable) {
+  const tbody=document.getElementById(tbodyId);
+  tbody.innerHTML='';
+  lideres.forEach(l=>{
+    const c=l.celula>=50?'var(--verde-medio)':l.celula>=25?'#e67e22':'var(--rojo)';
+    const tr=document.createElement('tr');
+    if(clickable){ tr.className='clickable-row'; tr.onclick=()=>abrirLider(l.nombre); }
+    tr.innerHTML=`<td class="lider-nombre">${l.nombre}</td>
+      <td><strong>${l.ganados}</strong></td>
+      <td>${miniBar(l.llamadas,'var(--verde-medio)')}</td>
+      <td>${miniBar(l.visitas,'#3a7ca5')}</td>
+      <td>${miniBar(l.celula,c)}</td>
+      <td>${pill(l.celula)}</td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+// ── VISTAS ──
+function renderPrincipal() {
+  const m=metricas(DATOS);
+  renderKPI('kpiPrincipal',m,'Total registros');
+  renderEmbudo('embudoSteps','embudoT',m,`Embudo general — ${m.total} personas`);
+  renderChart('chartMes',porMes(DATOS),'#1a4a73');
+  renderTablaL('tablaLideresPrincipal',porLider(DATOS),true);
+
+  // Grupos edad
+  const grupos=[
+    {key:'Somos uno (+18)',label:'Somos Uno',sub:'+18 años'},
+    {key:'Rocas ( Entre 15 y 17 años)',label:'Rocas',sub:'15-17 años'},
+    {key:'Teens (Entre 9 y 14 años)',label:'Teens',sub:'9-14 años'},
+  ];
+  const total=DATOS.length;
+  document.getElementById('edadGrid').innerHTML=grupos.map(g=>{
+    const n=DATOS.filter(f=>f['Tú eres:']===g.key).length;
+    return `<div class="edad-card">
+      <h4>${g.label}<br><span style="font-size:10px">${g.sub}</span></h4>
+      <div class="edad-num">${n}</div>
+      <div class="edad-pct">${pct(n,total)}% del total</div>
+    </div>`;
+  }).join('');
+}
+
+function renderEdad() {
+  const grupos=[
+    {key:'Somos uno (+18)',kpiId:'kpiSomosUno',eId:'embudoSU',tId:'embudoTSU'},
+    {key:'Rocas ( Entre 15 y 17 años)',kpiId:'kpiRocas',eId:'embudoR',tId:'embudoTR'},
+    {key:'Teens (Entre 9 y 14 años)',kpiId:'kpiTeens',eId:'embudoT2',tId:'embudoTT'},
+  ];
+  grupos.forEach(g=>{
+    const filas=DATOS.filter(f=>f['Tú eres:']===g.key);
+    const m=metricas(filas);
+    renderKPI(g.kpiId,m,`${filas.length} personas`);
+    renderEmbudo(g.eId,g.tId,m,`Embudo — ${m.total} personas`);
+  });
+}
+
+// ── SELECTOR LÍDERES ──
+function renderSelector() {
+  const busca=document.getElementById('buscaLider').value.toLowerCase();
+  let lideres=porLider(DATOS);
+  if(busca) lideres=lideres.filter(l=>l.nombre.toLowerCase().includes(busca));
+  renderTablaL('tablaSelector',lideres,true);
+}
+
+function abrirLider(nombre) {
+  const filas=DATOS.filter(f=>f['Líder Principal']===nombre);
+  personasActuales=filas;
+  document.getElementById('lNombre').textContent=nombre;
+  document.getElementById('lSub').textContent=`${filas.length} personas registradas`;
+  const m=metricas(filas);
+  document.getElementById('lStats').innerHTML=`
+    <div class="lider-stat"><div class="lider-stat-val" style="color:var(--verde)">${m.total}</div><div class="lider-stat-label">Ganados</div></div>
+    <div class="lider-stat"><div class="lider-stat-val" style="color:#3a7ca5">${pct(m.llamadas,m.total)}%</div><div class="lider-stat-label">Llamadas</div></div>
+    <div class="lider-stat"><div class="lider-stat-val" style="color:#5b9ec9">${pct(m.visitas,m.total)}%</div><div class="lider-stat-label">Visitas</div></div>
+    <div class="lider-stat"><div class="lider-stat-val" style="color:var(--verde-claro)">${pct(m.celula,m.total)}%</div><div class="lider-stat-label">En célula</div></div>`;
+  ['buscaP','fEdad','fLlamada','fVisita','fCelula'].forEach(id=>{ const el=document.getElementById(id); if(el.tagName==='INPUT') el.value=''; else el.selectedIndex=0; });
+  document.getElementById('selectorLider').style.display='none';
+  document.getElementById('detalleL').style.display='block';
+  renderTablaP(filas);
+}
+
+function volverSelector() {
+  document.getElementById('selectorLider').style.display='block';
+  document.getElementById('detalleL').style.display='none';
+}
+
+function renderTablaP(filas) {
+  document.getElementById('pCount').textContent=`${filas.length} persona${filas.length!==1?'s':''}`;
+  const tbody=document.getElementById('tablaP');
+  tbody.innerHTML='';
+  filas.forEach(f=>{
+    tbody.innerHTML+=`<tr>
+      <td><strong>${f['Nombres y apellidos completos']||'–'}</strong></td>
+      <td>${f['Quién te Invito?']||'–'}</td>
+      <td>${badgeEdad(f['Tú eres:'])}</td>
+      <td>${getFecha(f)}</td>
+      <td>${f['¿En qué barrio vives?']||'–'}</td>
+      <td>${badge(f['Llamada realizada y contestada (SI/NO)'])}</td>
+      <td>${badge(f['Visita realizada (SI/NO)'])}</td>
+      <td>${badge(f['Ubicado en célula o Grupo Go! (SI/NO)'])}</td>
+    </tr>`;
+  });
+}
+
+function filtrarP() {
+  const busca=document.getElementById('buscaP').value.toLowerCase();
+  const fE=document.getElementById('fEdad').value;
+  const fL=document.getElementById('fLlamada').value;
+  const fV=document.getElementById('fVisita').value;
+  const fC=document.getElementById('fCelula').value;
+  let filas=personasActuales;
+  if(busca) filas=filas.filter(f=>(f['Nombres y apellidos completos']||'').toLowerCase().includes(busca)||(f['Quién te Invito?']||'').toLowerCase().includes(busca));
+  if(fE) filas=filas.filter(f=>f['Tú eres:']===fE);
+  if(fL) filas=filas.filter(f=>f['Llamada realizada y contestada (SI/NO)']=== fL);
+  if(fV) filas=filas.filter(f=>f['Visita realizada (SI/NO)']=== fV);
+  if(fC) filas=filas.filter(f=>f['Ubicado en célula o Grupo Go! (SI/NO)']=== fC);
+  renderTablaP(filas);
+}
+
+// ── NAVEGACIÓN ──
+function mostrarVista(vista,btn) {
+  ['vistaPrincipal','vistaLideres','vistaEdad'].forEach(id=>document.getElementById(id).style.display='none');
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('activo'));
+  btn.classList.add('activo');
+  const mapa={
+    'principal':['Consolidación <span>2025</span>','vistaPrincipal'],
+    'lideres':['Análisis <span>por Líder</span>','vistaLideres'],
+    'edad':['Análisis <span>por Grupo de Edad</span>','vistaEdad'],
+  };
+  const [titulo,id]=mapa[vista];
+  document.getElementById('headerTitulo').innerHTML=titulo;
+  document.getElementById(id).style.display='block';
+  if(vista==='lideres') renderSelector();
+  if(vista==='edad') renderEdad();
+}
+
+// ── INIT ──
+async function init() {
+  const errDiv=document.getElementById('error-msg');
+  try {
+    const rows=await cargarDatos();
+    if(rows.length<2) throw new Error('No se encontraron datos en la hoja.');
+    const headers=rows[0];
+    DATOS=rows.slice(1).map(r=>parsear(headers,r));
+    document.getElementById('ultimaAct').textContent=new Date().toLocaleString('es-CO',{dateStyle:'medium',timeStyle:'short'});
+    renderPrincipal();
+    const L=document.getElementById('loading');
+    L.classList.add('oculto');
+    setTimeout(()=>L.remove(),600);
+  } catch(e) {
+    document.getElementById('loading').remove();
+    errDiv.style.display='block';
+    errDiv.innerHTML=`<strong>⚠️ Error al cargar los datos</strong><br><br>${e.message}<br><br>
+      Verifica que el SHEET_ID y API_KEY sean correctos y que la hoja esté pública.`;
+  }
+}
+init();
+</script>
+</body>
+</html>
