@@ -138,7 +138,8 @@
 <nav>
   <img src="somos-uno-logo.jpg" alt="Somos Uno" class="nav-logo">
   <div class="nav-brand">Somos Uno<br>Medellín</div>
-  <button class="nav-tab activo" onclick="mostrarVista('principal',this)">Principal</button>
+  <button class="nav-tab activo" onclick="mostrarVista('principal',this)">2026 — Principal</button>
+  <button class="nav-tab" onclick="mostrarVista('historico',this)">Histórico 2025</button>
   <button class="nav-tab" onclick="mostrarVista('lideres',this)">Por Líder</button>
   <button class="nav-tab" onclick="mostrarVista('edad',this)">Por Grupo de Edad</button>
 </nav>
@@ -242,6 +243,20 @@
     <div class="kpi-grid" id="kpiTeens"></div>
     <div class="embudo-card"><h3 id="embudoTT"></h3><div class="embudo-steps" id="embudoT2"></div></div>
   </div>
+
+  <div id="vistaHistorico" style="display:none">
+  <div class="section-title">Resumen 2025</div>
+  <div class="kpi-grid" id="kpiHist"></div>
+  <div class="section-title">Embudo 2025</div>
+  <div class="embudo-card"><h3 id="embudoTHist"></h3><div class="embudo-steps" id="embudoHist"></div></div>
+  <div class="section-title">Personas por mes — 2025</div>
+  <div class="chart-card"><h3>Distribución mensual</h3><div class="bars-chart" id="chartHist"></div></div>
+  <div class="section-title">Líderes 2025</div>
+  <div class="tabla-wrap"><table>
+    <thead><tr><th>Líder</th><th>Ganados</th><th>Llamadas</th><th>Visitas</th><th>En célula</th><th>Estado</th></tr></thead>
+    <tbody id="tablaHist"></tbody>
+  </table></div>
+</div>
 
 </main>
 <footer>Dashboard en vivo · Somos Uno MCI Medellín · Datos desde Google Sheets</footer>
@@ -378,11 +393,12 @@ function renderTablaL(tbodyId, lideres, clickable) {
 
 // ── VISTAS ──
 function renderPrincipal() {
-  const m=metricas(DATOS);
+  const DATOS26=DATOS.filter(f=>getAño(f)===2026);
+  const m=metricas(DATOS26);
   renderKPI('kpiPrincipal',m,'Total registros');
   renderEmbudo('embudoSteps','embudoT',m,`Embudo general — ${m.total} personas`);
-  renderChart('chartMes',porMes(DATOS),'#1a4a73');
-  renderTablaL('tablaLideresPrincipal',porLider(DATOS),true);
+  renderChart('chartMes',porMes(DATOS26),'#1a4a73');
+  renderTablaL('tablaLideresPrincipal',porLider(DATOS26),true);
 
   // Grupos edad
   const grupos=[
@@ -390,9 +406,9 @@ function renderPrincipal() {
     {key:'Rocas ( Entre 15 y 17 años)',label:'Rocas',sub:'15-17 años'},
     {key:'Teens (Entre 9 y 14 años)',label:'Teens',sub:'9-14 años'},
   ];
-  const total=DATOS.length;
+  const total=DATOS26.length;
   document.getElementById('edadGrid').innerHTML=grupos.map(g=>{
-    const n=DATOS.filter(f=>f['Tú eres:']===g.key).length;
+    const n=DATOS26.filter(f=>f['Tú eres:']===g.key).length;
     return `<div class="edad-card">
       <h4>${g.label}<br><span style="font-size:10px">${g.sub}</span></h4>
       <div class="edad-num">${n}</div>
@@ -479,12 +495,23 @@ function filtrarP() {
 }
 
 // ── NAVEGACIÓN ──
+
+function renderHistorico() {
+  const f25=DATOS.filter(f=>getAño(f)===2025);
+  const m=metricas(f25);
+  renderKPI('kpiHist',m,'2025');
+  renderEmbudo('embudoHist','embudoTHist',m,`Embudo 2025 — ${m.total} personas`);
+  renderChart('chartHist',porMes(f25),'#3a1fc4');
+  renderTablaL('tablaHist',porLider(f25),true);
+}
+
 function mostrarVista(vista,btn) {
-  ['vistaPrincipal','vistaLideres','vistaEdad'].forEach(id=>document.getElementById(id).style.display='none');
+  ['vistaPrincipal','vistaHistorico','vistaLideres','vistaEdad'].forEach(id=>document.getElementById(id).style.display='none');
   document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('activo'));
   btn.classList.add('activo');
   const mapa={
-    'principal':['Consolidación <span>2025</span>','vistaPrincipal'],
+    'principal':['Consolidación <span>2026</span>','vistaPrincipal'],
+    'historico':['Histórico <span>2025</span>','vistaHistorico'],
     'lideres':['Análisis <span>por Líder</span>','vistaLideres'],
     'edad':['Análisis <span>por Grupo de Edad</span>','vistaEdad'],
   };
@@ -492,6 +519,7 @@ function mostrarVista(vista,btn) {
   document.getElementById('headerTitulo').innerHTML=titulo;
   document.getElementById(id).style.display='block';
   if(vista==='lideres') renderSelector();
+  if(vista==='historico') renderHistorico();
   if(vista==='edad') renderEdad();
 }
 
